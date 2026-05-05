@@ -88,13 +88,23 @@ def migrate_install_layout(current_dir):
             legacy_bin_dir.rmdir()
         else:
             shutil.move(str(legacy_bin_dir), str(APP_DIR))
+        print(f"Writing wrapper script to {BIN_DIR}")
         write_wrapper(APP_DIR)
-        return APP_DIR
-
-    if current_dir == APP_DIR:
+        print(f"Refreshing desktop files")
+        refresh_desktop_files(APP_DIR)
+        print(f"Running 'linoffice reset'")
+        result = subprocess.run(
+            ["/bin/bash", BIN_PATH, "reset"],
+            #cwd=str(app_dir),
+            text=True,
+        )
+        if result.returncode == 0:
+            print("Container rebooted successfully.")
+        else:
+            print(f"'linoffice reset' failed with exit code {result.returncode}.")
+    elif current_dir == APP_DIR:
         write_wrapper(APP_DIR)
-
-    return current_dir
+    return APP_DIR
 
 def get_latest_release():
     """Fetch the latest non-draft, non-prerelease release from GitHub."""
@@ -226,14 +236,29 @@ def main():
 
     print(f"New version available: {latest_version} (Current: {CURRENT_VERSION})")
 
+    current_dir = Path(current_dir).resolve()
+    if current_dir == legacy_bin_dir and legacy_bin_dir.is_dir() and (legacy_bin_dir / "linoffice.sh").exists():
+        will_migrate = True
+
     # If major version changes, prompt with release notes link and explicit warning
     if major_version(CURRENT_VERSION) != major_version(latest_version):
         release_notes_url = f"https://github.com/{REPO_OWNER}/{REPO_NAME}/releases/tag/v{latest_version}"
         print("WARNING: This update changes the major version and may include breaking changes.")
         print("You may have to intervene manually if updating from the current version.")
+        if will_migrate:
+            print("Additionally, the update may migrate the installation directory, which will trigger an automatic container restart.")
+            print("Be sure to save your work before continuing.")
         print(f"Please review the release notes: {release_notes_url}")
         confirm_major = input("Do you still want to update? (y/n): ").strip().lower()
         if confirm_major != 'y':
+            print("Update cancelled.")
+            return
+    elif will_migrate:
+        print("WARNING: The update may migrate the installation directory, which will trigger an automatic container restart.")
+        print("Be sure to save your work before continuing.")
+        print(f"For more info, please review the release notes: {release_notes_url}")
+        confirm = input("Do you want to download and install the update? (y/n): ").strip().lower()
+        if confirm != 'y':
             print("Update cancelled.")
             return
     else:
