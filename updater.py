@@ -89,6 +89,7 @@ def migrate_install_layout(current_dir):
         else:
             shutil.move(str(legacy_bin_dir), str(APP_DIR))
         write_wrapper(APP_DIR)
+        refresh_desktop_files(APP_DIR)
         return APP_DIR
 
     if current_dir == APP_DIR:
