@@ -1076,7 +1076,7 @@ function waCheckIdle() {
 # Name: 'use_venv'
 # Role: Activate virtual environment if available
 use_venv() {
-  local venv_dir="$HOME/.local/bin/linoffice/venv"
+  local venv_dir="$HOME/.local/share/linoffice/venv"
   local activate_script="$venv_dir/bin/activate"
   
   if [[ -f "$activate_script" ]]; then

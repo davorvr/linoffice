@@ -5,7 +5,9 @@ APT_UPDATED=0
 
 REPO_OWNER="eylenburg"
 REPO_NAME="linoffice"
-TARGET_DIR="$HOME/.local/bin/linoffice"
+TARGET_DIR="$HOME/.local/share/linoffice"
+BIN_PATH="$HOME/.local/bin/linoffice"
+LEGACY_TARGET_DIR="$HOME/.local/bin/linoffice"
 TMPDIR=$(mktemp -d)
 GITHUB_API_URL="https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases"
 
@@ -670,6 +672,18 @@ download_latest() {
     SOURCE_DIR="$EXTRACTED_DIR/src"
   fi
 
+  if [[ -d "$LEGACY_TARGET_DIR" && -f "$LEGACY_TARGET_DIR/linoffice.sh" && "$LEGACY_TARGET_DIR" != "$TARGET_DIR" ]]; then
+    if [[ ! -e "$TARGET_DIR" ]]; then
+      echo "Moving existing installation from $LEGACY_TARGET_DIR to $TARGET_DIR..."
+      mkdir -p "$(dirname "$TARGET_DIR")"
+      mv "$LEGACY_TARGET_DIR" "$TARGET_DIR"
+    else
+      backup_dir="${LEGACY_TARGET_DIR}.old.$(date +%Y%m%d%H%M%S)"
+      echo "Existing installation found at $TARGET_DIR; moving legacy directory to $backup_dir."
+      mv "$LEGACY_TARGET_DIR" "$backup_dir"
+    fi
+  fi
+
   echo "Installing to $TARGET_DIR..."
 
   # Check if TARGET_DIR exists and contains linoffice.sh
@@ -686,9 +700,17 @@ download_latest() {
   # Make everything executable
   find "$TARGET_DIR" -type f \( -name "*.py" -o -name "*.sh" \) -exec chmod +x {} \;
 
+  mkdir -p "$(dirname "$BIN_PATH")"
+  cat > "$BIN_PATH" <<EOF
+#!/usr/bin/env bash
+exec "$TARGET_DIR/linoffice.sh" "\$@"
+EOF
+  chmod +x "$BIN_PATH"
+
   rm -rf "$TMPDIR"
 
   echo "✅ Linoffice v${LATEST_VERSION} installed at $TARGET_DIR"
+  echo "✅ Linoffice command installed at $BIN_PATH"
 }
 
 ##################################################

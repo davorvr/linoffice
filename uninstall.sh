@@ -1,5 +1,6 @@
 #!/bin/bash
-SCRIPT_DIR="$HOME/.local/bin/linoffice"
+SCRIPT_DIR="$HOME/.local/share/linoffice"
+BIN_PATH="$HOME/.local/bin/linoffice"
 SCRIPT_NAME="$(basename "$0")"
 COMPOSE_PATH="$(realpath "${SCRIPT_DIR}/config/compose.yaml")"
 CONTAINER_NAME="LinOffice"
@@ -160,7 +161,7 @@ if [[ -n "$INSTALLED_DEPS_FILE" ]]; then
 
   # Clean up virtual environment if used
   if [[ "$PIP_VENV" == "1" ]]; then
-    VENV_DIR="$HOME/.local/bin/linoffice/venv"
+    VENV_DIR="$HOME/.local/share/linoffice/venv"
     if [[ -d "$VENV_DIR" ]]; then
       read -p "A Python virtual environment was used at $VENV_DIR. Delete it? (y/n): " confirm
       if [[ "$confirm" == "y" || "$confirm" == "Y" ]]; then
@@ -328,6 +329,11 @@ if [[ -d "$APPDATA_PATH" ]]; then
   fi
 else
   echo "Warning: Directory $APPDATA_PATH does not exist."
+fi
+
+if [[ -f "$BIN_PATH" ]]; then
+  echo "Deleting command wrapper: $BIN_PATH"
+  rm -f "$BIN_PATH"
 fi
 
 # Find all files and folders in the same directory as uninstall.sh (excluding itself)

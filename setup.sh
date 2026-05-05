@@ -87,7 +87,7 @@ print_progress() {
 # Name: 'use_venv'
 # Role: Activate virtual environment if available
 use_venv() {
-  local venv_dir="$HOME/.local/bin/linoffice/venv"
+  local venv_dir="$HOME/.local/share/linoffice/venv"
   local activate_script="$venv_dir/bin/activate"
 
   print_info "Checking for virtual environment at: $venv_dir"
@@ -1576,8 +1576,9 @@ function desktop_files() {
             continue
         }
 
-        # Replace /PATH/ with LINOFFICE_DIR and write to temp file
-        if ! sed "s|/PATH/|$LINOFFICE_DIR/|g" "$desktop_file" > "$temp_file"; then
+        # Replace /PATH/ with LINOFFICE_DIR and use the PATH wrapper for CLI launchers.
+        if ! sed -e "s|Exec=/PATH/linoffice.sh|Exec=$HOME/.local/bin/linoffice|g" \
+                 -e "s|/PATH/|$LINOFFICE_DIR/|g" "$desktop_file" > "$temp_file"; then
             echo "  Error: sed command failed"
             rm -f "$temp_file"
             continue
