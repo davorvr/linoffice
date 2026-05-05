@@ -7,6 +7,7 @@ import re
 import sys
 import http.client
 import json
+import subprocess
 import urllib.parse
 
 # Configuration
@@ -42,10 +43,28 @@ def move_contents(source, destination):
             shutil.move(str(item), str(target))
 
 
-def write_wrapper():
+def write_wrapper(app_dir=APP_DIR):
     BIN_PATH.parent.mkdir(parents=True, exist_ok=True)
-    BIN_PATH.write_text(f'#!/usr/bin/env bash\nexec "{APP_DIR}/linoffice.sh" "$@"\n')
+    BIN_PATH.write_text(f'#!/usr/bin/env bash\nexec "{app_dir}/linoffice.sh" "$@"\n')
     BIN_PATH.chmod(0o755)
+
+
+def refresh_desktop_files(app_dir):
+    setup_script = app_dir / "setup.sh"
+    if not setup_script.exists():
+        print(f"Skipping desktop launcher refresh; setup script not found: {setup_script}")
+        return
+
+    print("Refreshing desktop launchers...")
+    result = subprocess.run(
+        ["/bin/bash", str(setup_script), "--desktop"],
+        cwd=str(app_dir),
+        text=True,
+    )
+    if result.returncode == 0:
+        print("Desktop launchers refreshed successfully.")
+    else:
+        print(f"Desktop launcher refresh failed with exit code {result.returncode}.")
 
 
 def migrate_install_layout(current_dir):
@@ -69,11 +88,11 @@ def migrate_install_layout(current_dir):
             legacy_bin_dir.rmdir()
         else:
             shutil.move(str(legacy_bin_dir), str(APP_DIR))
-        write_wrapper()
+        write_wrapper(APP_DIR)
         return APP_DIR
 
     if current_dir == APP_DIR:
-        write_wrapper()
+        write_wrapper(APP_DIR)
 
     return current_dir
 
@@ -229,6 +248,8 @@ def main():
 
     current_dir = migrate_install_layout(Path(sys.argv[0]).parent)
     if download_and_update(asset_url, current_dir):
+        write_wrapper(current_dir)
+        refresh_desktop_files(current_dir)
         print("Please restart the application to use the new version.")
     else:
         print("Update failed.")
