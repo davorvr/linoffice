@@ -11,7 +11,7 @@ GITHUB_API_URL="https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases
 
 LINOFFICE_SCRIPT="$TARGET_DIR/gui/linoffice.py"
 
-APPDATA_DIR="$HOME/.local/share/linoffice"
+APPDATA_DIR="$HOME/.local/state/linoffice"
 INSTALLED_PM_PACKAGES=()
 INSTALLED_FLATPAKS=()
 INSTALLED_PIP_PACKAGES=()

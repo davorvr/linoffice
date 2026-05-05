@@ -17,7 +17,7 @@ readonly EC_INVALID_FLAVOR=15
 
 # PATHS
 readonly SCRIPT_DIR_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
-readonly APPDATA_PATH="${HOME}/.local/share/linoffice" # make sure this is the same as in the setup.sh
+readonly APPDATA_PATH="${HOME}/.local/state/linoffice" # make sure this is the same as in the setup.sh
 readonly LASTRUN_PATH="${APPDATA_PATH}/lastrun"
 readonly SLEEP_DETECT_PATH="${APPDATA_PATH}/last_activity"
 readonly SLEEP_MARKER="${APPDATA_PATH}/sleep_marker"

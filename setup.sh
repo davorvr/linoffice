@@ -7,7 +7,7 @@ CONTAINER_EXISTS=0  # 0 = Does not exist (default), 1 = exists
 
 # Absolute filepaths
 USER_APPLICATIONS_DIR="${HOME}/.local/share/applications"
-APPDATA_PATH="${HOME}/.local/share/linoffice"
+APPDATA_PATH="${HOME}/.local/state/linoffice"
 # Ensure APPDATA_PATH exists before using it
 mkdir -p "$APPDATA_PATH"
 SUCCESS_FILE="${APPDATA_PATH}/success"
