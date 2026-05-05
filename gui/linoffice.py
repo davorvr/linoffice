@@ -16,7 +16,7 @@ def container_exists(container_name="LinOffice"):
     except Exception:
         return False
 
-def setup_successful(log_path="~/.local/share/linoffice/setup_progress.log"):
+def setup_successful(log_path="~/.local/state/linoffice/setup_progress.log"):
     try:
         log_file = Path(log_path).expanduser()
         if not log_file.exists():
@@ -43,7 +43,7 @@ def main():
     base_dir = os.path.dirname(os.path.abspath(__file__))
     mainwindow_path = os.path.join(base_dir, "mainwindow.py")
     installer_path = os.path.join(base_dir, "installer", "installer.py")
-    log_path = "~/.local/share/linoffice/setup_progress.log"
+    log_path = "~/.local/state/linoffice/setup_progress.log"
 
     container_found = container_exists("LinOffice")
     success = setup_successful(log_path)

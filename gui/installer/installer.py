@@ -242,7 +242,7 @@ class Wizard(QWidget):
             QTimer.singleShot(100, self.start_installation)
 
         def on_show_log():
-            log_path = os.path.expanduser("~/.local/share/linoffice/windows_install.log")
+            log_path = os.path.expanduser("~/.local/state/linoffice/windows_install.log")
             QDesktopServices.openUrl(QUrl.fromLocalFile(log_path))
             # Keep dialog open
 

@@ -1,7 +1,7 @@
 # PowerShell script to read registry_override.conf and apply settings to Windows registry
 
 # Define the path to the configuration file
-$configFile = "\\tsclient\home\.local\share\linoffice\registry_override.conf"
+$configFile = "\\tsclient\home\.local\state\linoffice\registry_override.conf"
 
 # Check if the file exists
 if (-not (Test-Path $configFile)) {

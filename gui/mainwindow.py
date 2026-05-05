@@ -15,13 +15,13 @@ SETUP_SCRIPT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'se
 UNINSTALL_SCRIPT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'uninstall.sh'))
 
 # Define the user's local registry override config path
-USER_REGISTRY_CONFIG = os.path.expanduser('~/.local/share/linoffice/registry_override.conf')
+USER_REGISTRY_CONFIG = os.path.expanduser('~/.local/state/linoffice/registry_override.conf')
 
 # Define the languages CSV file path
 LANGUAGES_CSV = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'config', 'languages.csv'))
 
 # Define the internet state file path
-INTERNET_STATE_FILE = os.path.expanduser('~/.local/share/linoffice/internet')
+INTERNET_STATE_FILE = os.path.expanduser('~/.local/state/linoffice/internet')
 
 def ensure_internet_state_file():
         """Ensure the internet state file exists with default 'on' value"""
@@ -841,7 +841,7 @@ class TroubleshootingWindow(QMainWindow):
         subprocess.Popen([LINOFFICE_SCRIPT, '--stopcontainer'])
 
     def open_logfile(self):
-        logfile = os.path.expanduser('~/.local/share/linoffice/linoffice.log')
+        logfile = os.path.expanduser('~/.local/state/linoffice/linoffice.log')
         # Try to open with xdg-open (Linux default)
         subprocess.Popen(['xdg-open', logfile])
 

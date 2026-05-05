@@ -136,7 +136,7 @@ FreeRDP can also be installed as a [Flatpak](https://flathub.org/apps/com.freerd
 
 0. Make sure that you have **installed all the dependencies** (see above).
 1. **Download this repo** (e.g. [release version](https://github.com/eylenburg/linoffice/releases) or [latest git version](https://github.com/eylenburg/linoffice/archive/refs/heads/main.zip))
-2. **Unzip and save** in a convenient folder (e.g. `~/.local/bin/linoffice`)
+2. **Unzip and save** in a convenient folder (e.g. `~/.local/share/linoffice`)
 3. Optional: Change some settings in `config/compose.yaml.default` or `config/linoffice.conf`
 
 <details><summary><strong>Don't want to use Windows 11?</strong></summary>
@@ -166,8 +166,9 @@ You can run the `uninstall.sh` to remove everything or click on the Uninstall bu
 <details><summary>Where are the files saved?</summary>
 
 If you want to manually remove the files:
-- The self-contained folder where you have saved the `linoffice.sh` script; this will be `~/.local/bin/linoffice` if you used the Quickstart script to install Linoffice.
-- The appdata folder for temporary files is in `~/.local/share/linoffice`
+- The self-contained folder where you have saved the `linoffice.sh` script; this will be `~/.local/share/linoffice` if you used the Quickstart script to install Linoffice.
+- The command wrapper is installed as `~/.local/bin/linoffice`.
+- The appdata folder for temporary files, logs, and setup state is in `~/.local/state/linoffice`
 - The `.desktop files` (Excel, Onenote, Outlook, Powerpoint, Word) will be created in `~/.local/share/applications`
 - The Podman containers, which include the Windows VM, can be removed with `podman rm -f LinOffice && podman volume rm linoffice_data`
 
@@ -189,7 +190,7 @@ You will find a launcher for "LinOffice" in your app menu.
 
 ### Using the terminal
 
-If you are using the terminal commands often, you might want to create an alias by running `echo "alias linoffice='/home/user/.local/bin/linoffice/linoffice.sh'" >> ~/.bashrc && source ~/.bashrc` - but make sure to adjust the username and path to where your `linoffice.sh` script is saved. This will enable you to run the LinOffice script from anywhere with the `linoffice` command.
+The Quickstart installer creates a `linoffice` command in `~/.local/bin`, so you can run LinOffice from anywhere as long as `~/.local/bin` is in your `PATH`.
 
 - `linoffice [excel|word|powerpoint|onenote|outlook]`: runs one of the predefined Office applications
 - `linoffice manual [msaccess.exe|mspub.exe]`: run Microsoft Access or Microsoft Publisher, if installed (they are not part of the default Office version installed by LinOffice)
@@ -228,7 +229,7 @@ The Office application are running in a virtual machine with Windows, meaning th
 If you have problems with the setup script, such as Office not being found or FreeRDP not connecting, do the following:
 
 1. Access the VM through `127.0.0.1:8006` in the browser (password to log in is `MyWindowsPassword`) and check:
-  - [ ] Does the VM run and let you log in? If not, check `windows_install.log` (in `~/.local/share/linoffice`) to see what could have gone wrong.
+  - [ ] Does the VM run and let you log in? If not, check `windows_install.log` (in `~/.local/state/linoffice`) to see what could have gone wrong.
   - [ ] Is Microsoft Office installed? If not, try to download and install Office manually, then create an empty file (not folder) called `success` in `C:\OEM\`, then sign out (!) of the Windows account using the Start Menu but don't shut down Windows
 2. After this, run `./setup.sh --firstrun` from Linux
 
@@ -243,13 +244,13 @@ If you still get an error, test if you can connect to the VM using RDP.
 6. After this, run `./setup.sh --firstrun` from Linux again and hopefully it succeeds now.
 
 If there is still a problem in the setup, even though you have just confirmed that Office is installed and you can launch Office applications from Linux using FreeRDP, do this:
-1. In `~/.local/share/linoffice/` edit the file called `setup_progress.log` and add the line `office_installed` at the end if it doesn't yet exist
+1. In `~/.local/state/linoffice/` edit the file called `setup_progress.log` and add the line `office_installed` at the end if it doesn't yet exist
 2. Run `./setup.sh --desktop` to create .desktop files (app launchers in Linux)
    
 Now you should be able to find the "Linoffice" GUI as well as the starters for Word, Excel etc. in your Linux menu.
 
 If you still can't get the setup to work, please [create a bug report ("setup didn't work")](https://github.com/eylenburg/linoffice/issues) with these information:
-- The `windows_install.log` and `setup_output.log` (in `~/.local/share/linoffice`)
+- The `windows_install.log` and `setup_output.log` (in `~/.local/state/linoffice`)
 - The `setup.log`, `setup_office.log`, and `setup_rdp.log` (if they exist) in `C:\OEM` in the Windows VM (if you can only access the VM through the browser/VNC, there is no clipboard sharing with Linux, so a screenshot is fine)
 - Your system information (LinOffice version, Linux distribution, desktop environment, Wayland or X11, how did you install podman, podman-compose and freerdp?)
 
@@ -315,7 +316,7 @@ At the moment, these are hardcoded to `MyWindowsUser` and `MyWindowsPassword` in
 
 First, change the password and/or username in Windows. To do this you need to access the "full" Windows session, either via RDP (`./linoffice.sh windows`) or VNC (`127.0.0.1:8006` in the browser, password is `MyWindowsPassword`; log out from Windows when you're done).
 
-Then, find the file `linoffice.sh`, which is most likely located in `~/.local/bin/linoffice/` and edit these lines (currently in line 44-45):
+Then, find the file `linoffice.sh`, which is most likely located in `~/.local/share/linoffice/` and edit these lines (currently in line 44-45):
 
 ```
 RDP_USER="MyWindowsUser"
@@ -333,10 +334,10 @@ These are the files that are part of LinOffice and their functions:
 
 <details><summary>File list</summary>
     
-- `quickstart.sh`: Script that installs all required dependencies (new ones are remembered in `~/.local/share/linoffice/installed_dependencies`, downloads the latest version of LinOffice from GitHub and then launches `src/gui/linoffice.py`, which will most likely end up running the graphical installer
+- `quickstart.sh`: Script that installs all required dependencies (new ones are remembered in `~/.local/state/linoffice/installed_dependencies`, downloads the latest version of LinOffice from GitHub and then launches `src/gui/linoffice.py`, which will most likely end up running the graphical installer
 - `src/setup.sh`: Install script for LinOffice. Checks requirements are met and dependencies are installed, calls `locale_lang.sh` and `locale_reg.sh` to set various location settings, downloads Windows and sets up a Windows VM, installs Office in the VM, tries to connect via RDP, executes `FirstRDPRun.ps1` script in Windows, and creates app launchers.
 - `src/linoffice.sh`: Main script that is used when running LinOffice. It manages the Podman container (e.g. start or unsuspend) and runs the correct FreeRDP command for the Office (and other) applications.
-- `src/uninstall.sh`: Uninstall script. Removes program launchers in `~/.local/share/applications`, removes all LinOffice files in `~/.local/bin/linoffice/` and `~/.local/share/linoffice/`, offers to removes dependencies that were installed by `quickstart.sh` (as noted down in `~/.local/share/linoffice/installed_dependencies`), offers to remove the LinOffice Podman container and its data.
+- `src/uninstall.sh`: Uninstall script. Removes program launchers in `~/.local/share/applications`, removes all LinOffice app files in `~/.local/share/linoffice/`, removes the `~/.local/bin/linoffice` command wrapper, offers to remove dependencies that were installed by `quickstart.sh` (as noted down in `~/.local/state/linoffice/installed_dependencies`), offers to remove the LinOffice Podman container and its data.
 - `src/updater.py`: Checks if a newer version of LinOffice is available on GitHub and updates the files.
 - `src/gui/linoffice.py`: Either starts the installation process (`installer.py`) or launches the LinOffice GUI (`mainwindow.py`).
 - `src/gui/mainwindow.py`: The main GUI for LinOffice.
@@ -353,7 +354,7 @@ These are the files that are part of LinOffice and their functions:
 - `src/config/oem/OfficeConfiguration.xml`: Config file for the automatic installation of Office, e.g. which version of Office to install. It is used by Office Deployment Tool.
 - `src/config/oem/InstallOffice.ps1`: Scheduled by `install.bat`. Downloads Office Deployment Tool from Microsoft and runs it to install Microsoft Office using the configuration in `OfficeConfiguration.xml`. Then creates an empty file called `C:\OEM\success` and reboots the machine. This is the fourth reboot (three occur during the Windows installation) which will signal to `setup.sh` that the virtual machine is all set up now.
 - `src/config/oem/NetProfileCleanup.ps1`: A scheduled task created by `install.bat`. It renames the current network profile to LinOffice and deletes all other ones.
-- `src/config/oem/TimeSync.ps1`: A scheduled task created by `install.bat`. It syncs the time if a file called `\\tsclient\home\.local\share\linoffice\sleep_marker` is detected, which is created by `linoffice.sh` after the Linux host machine is suspended (which would introduce a time drift between the host and the VM).
+- `src/config/oem/TimeSync.ps1`: A scheduled task created by `install.bat`. It syncs the time if a file called `\\tsclient\home\.local\state\linoffice\sleep_marker` is detected, which is created by `linoffice.sh` after the Linux host machine is suspended (which would introduce a time drift between the host and the VM).
 - `src/config/oem/FirstRDPRun.ps1`: Creates a `success` file in Linux if the `C:\OEM\success` file exists in Windows (confirming a successful Office installation) and runs `QuickAccess.ps1`. This script is called by `setup.sh`.
 - `src/config/oem/QuickAccess.ps1`: Cleans up the quick access in Windows File Explorer by unpinning all folders and pinning the Linux `/home` folder instead.
 - `src/config/oem/RegistryOverride.ps1`: Applies changes to certain localization settings when they are change in the LinOffice GUI. This works by reading `registry_override.conf` (created by `mainwindow.py`) and applying the settings to the Windows registry.

@@ -1,7 +1,7 @@
 # Script to monitor if there is a sleep_marker created by LinOffice (indicating the Linux host was suspended) in order to trigger a time sync as the time in the Windows VM will otherwise drift while Linux is suspended.
 
 # Define the path to monitor. Make sure this matches the location in the LinOffice.sh.
-$filePath = "\\tsclient\home\.local\share\linoffice\sleep_marker"
+$filePath = "\\tsclient\home\.local\state\linoffice\sleep_marker"
 $networkPath = "\\tsclient\home"
 
 # Function to check and handle file

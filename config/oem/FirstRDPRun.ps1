@@ -24,8 +24,8 @@ try {
     Write-Log "RDP session detected"
 
     # Test if we can access the share
-    if (Test-Path "\\tsclient\home\.local\share\linoffice") {
-        Write-Log "\\tsclient\home\.local\share\linoffice is accessible"
+    if (Test-Path "\\tsclient\home\.local\state\linoffice") {
+        Write-Log "\\tsclient\home\.local\state\linoffice is accessible"
 
         # Run QuickAccess.ps1
         Write-Log "Running QuickAccess.ps1..."
@@ -56,9 +56,9 @@ try {
         }
 
         # Create success file with current time in \\tsclient\home 
-        Write-Log "Creating success file with current time in \\tsclient\home\.local\share\linoffice\success..."
+        Write-Log "Creating success file with current time in \\tsclient\home\.local\state\linoffice\success..."
         $currentTime = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
-        $currentTime | Out-File -FilePath "\\tsclient\home\.local\share\linoffice\success" -Force
+        $currentTime | Out-File -FilePath "\\tsclient\home\.local\state\linoffice\success" -Force
         if ($?) {
             Write-Log "success file created successfully with timestamp: $currentTime"
         } else {
