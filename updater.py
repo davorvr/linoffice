@@ -17,6 +17,66 @@ GITHUB_API_URL = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/release
 PRESERVE_FILES = {"config/compose.yaml", "config/linoffice.conf", "config/oem/registry/regional_settings.reg"}
 GITHUB_TOKEN = None  # Can replace with GitHub Personal Access Token if hitting API limits
 
+APP_DIR = Path.home() / ".local/share/linoffice"
+BIN_PATH = Path.home() / ".local/bin/linoffice"
+STATE_DIR = Path.home() / ".local/state/linoffice"
+LEGACY_APPDATA_DIR = Path.home() / ".local/share/linoffice"
+
+
+def move_contents(source, destination):
+    """Move all children from source into destination."""
+    destination.mkdir(parents=True, exist_ok=True)
+    for item in source.iterdir():
+        target = destination / item.name
+        if target.exists():
+            if target.is_dir() and item.is_dir():
+                move_contents(item, target)
+                item.rmdir()
+            else:
+                backup = target.with_name(f"{target.name}.old")
+                if backup.exists():
+                    backup = target.with_name(f"{target.name}.old.{os.getpid()}")
+                target.rename(backup)
+                shutil.move(str(item), str(target))
+        else:
+            shutil.move(str(item), str(target))
+
+
+def write_wrapper():
+    BIN_PATH.parent.mkdir(parents=True, exist_ok=True)
+    BIN_PATH.write_text(f'#!/usr/bin/env bash\nexec "{APP_DIR}/linoffice.sh" "$@"\n')
+    BIN_PATH.chmod(0o755)
+
+
+def migrate_install_layout(current_dir):
+    """Move old quickstart installs into the current partial layout."""
+    current_dir = Path(current_dir).resolve()
+    legacy_bin_dir = BIN_PATH
+
+    if LEGACY_APPDATA_DIR.exists() and not (LEGACY_APPDATA_DIR / "linoffice.sh").exists():
+        print(f"Moving state files from {LEGACY_APPDATA_DIR} to {STATE_DIR}")
+        move_contents(LEGACY_APPDATA_DIR, STATE_DIR)
+        try:
+            LEGACY_APPDATA_DIR.rmdir()
+        except OSError:
+            pass
+
+    if current_dir == legacy_bin_dir and legacy_bin_dir.is_dir() and (legacy_bin_dir / "linoffice.sh").exists():
+        print(f"Moving LinOffice app from {legacy_bin_dir} to {APP_DIR}")
+        APP_DIR.parent.mkdir(parents=True, exist_ok=True)
+        if APP_DIR.exists():
+            move_contents(legacy_bin_dir, APP_DIR)
+            legacy_bin_dir.rmdir()
+        else:
+            shutil.move(str(legacy_bin_dir), str(APP_DIR))
+        write_wrapper()
+        return APP_DIR
+
+    if current_dir == APP_DIR:
+        write_wrapper()
+
+    return current_dir
+
 def get_latest_release():
     """Fetch the latest non-draft, non-prerelease release from GitHub."""
     try:
@@ -167,7 +227,7 @@ def main():
     asset_url = f"https://github.com/{REPO_OWNER}/{REPO_NAME}/archive/refs/tags/v{latest_version}.zip"
     print(f"Using download URL: {asset_url}")
 
-    current_dir = Path(sys.argv[0]).parent
+    current_dir = migrate_install_layout(Path(sys.argv[0]).parent)
     if download_and_update(asset_url, current_dir):
         print("Please restart the application to use the new version.")
     else:
